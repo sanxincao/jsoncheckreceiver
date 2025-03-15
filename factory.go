@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/sanxincao/icmpcheckreceiver/internal/metadata"
+	"github.com/sanxincao/jsoncheckreceiver/internal/metadata"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/receiver"
 	"go.opentelemetry.io/collector/receiver/scraperhelper"
-	"go.uber.org/zap"
 )
 
 func NewFactory() receiver.Factory {
