@@ -1,8 +1,6 @@
 package jsoncheckreceiver
 
 import (
-	"time"
-
 	"go.opentelemetry.io/collector/receiver/scraperhelper"
 )
 
