@@ -41,10 +41,14 @@ func (s *jsonScraper) Scrape(ctx context.Context) (pmetric.Metrics, error) {
 	scopeMetrics := metrics.ResourceMetrics().AppendEmpty().ScopeMetrics().AppendEmpty().Metrics()
 
 	dataMetric := scopeMetrics.AppendEmpty()
-	dataMetric.SetName("json.data")
+	dataMetric.SetName("rtu.data")
 	dataMetricDataPoints := dataMetric.SetEmptyGauge().DataPoints()
 
-	resp, err := http.Get(fmt.Sprintf("%s/%s", s.serverURL, s.target))
+	alarmMetric := scopeMetrics.AppendEmpty()
+	alarmMetric.SetName("alarm.value")
+	alarmMetricDataPoints := alarmMetric.SetEmptyGauge().DataPoints()
+
+	resp, err := http.Get(fmt.Sprintf("%s", s.serverURL))
 	if err != nil {
 		return pmetric.NewMetrics(), fmt.Errorf("failed to fetch data from server %q: %w", s.serverURL, err)
 	}
@@ -64,8 +68,15 @@ func (s *jsonScraper) Scrape(ctx context.Context) (pmetric.Metrics, error) {
 		return pmetric.NewMetrics(), fmt.Errorf("failed to unmarshal JSON data: %w", err)
 	}
 
-	for key, value := range jsonData {
-		appendDataPoint(dataMetricDataPoints, key, value)
+	rtuFields := []string{"RTU1", "RTU2", "RTU3", "RTU4"}
+	for _, field := range rtuFields {
+		if value, ok := jsonData[field]; ok {
+			appendDataPoint(dataMetricDataPoints, field, value)
+		}
+	}
+
+	if alarmValue, ok := jsonData["alarm_value"]; ok {
+		appendDataPoint(alarmMetricDataPoints, "alarm.value", alarmValue)
 	}
 
 	return metrics, nil
