@@ -63,20 +63,22 @@ func (s *jsonScraper) Scrape(ctx context.Context) (pmetric.Metrics, error) {
 		return pmetric.NewMetrics(), fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var jsonData map[string]interface{}
+	var jsonData []map[string]interface{}
 	if err := json.Unmarshal(body, &jsonData); err != nil {
 		return pmetric.NewMetrics(), fmt.Errorf("failed to unmarshal JSON data: %w", err)
 	}
-
-	rtuFields := []string{"RTU1", "RTU2", "RTU3", "RTU4"}
-	for _, field := range rtuFields {
-		if value, ok := jsonData[field]; ok {
-			appendDataPoint(dataMetricDataPoints, field, value)
+	//保留字段以后使用item["ip"].(string)
+	for _, item := range jsonData {
+		rtuFields := []string{"RTU1", "RTU2", "RTU3", "RTU4"}
+		for _, field := range rtuFields {
+			if value, ok := item[field]; ok {
+				appendDataPoint(dataMetricDataPoints, field, value)
+			}
 		}
-	}
 
-	if alarmValue, ok := jsonData["alarm_value"]; ok {
-		appendDataPoint(alarmMetricDataPoints, "alarm.value", alarmValue)
+		if alarmValue, ok := item["alarm_value"]; ok {
+			appendDataPoint(alarmMetricDataPoints, "alarm.value", alarmValue)
+		}
 	}
 
 	return metrics, nil
