@@ -69,7 +69,7 @@ func (s *jsonScraper) Scrape(ctx context.Context) (pmetric.Metrics, error) {
 	}
 	//保留字段以后使用item["ip"].(string)
 	for _, item := range jsonData {
-		rtuFields := []string{"RTU1", "RTU2", "RTU3", "RTU4"}
+		rtuFields := []string{"rtu1", "rtu2", "rtu3", "rtu4"}
 		for _, field := range rtuFields {
 			if value, ok := item[field]; ok {
 				appendDataPoint(dataMetricDataPoints, field, value)
