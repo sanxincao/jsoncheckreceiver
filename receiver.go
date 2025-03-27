@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -91,12 +92,18 @@ func appendDataPoint(metricDataPoints pmetric.NumberDataPointSlice, key string, 
 
 	switch v := value.(type) {
 	case float64:
-		dp.SetDoubleValue(v)
+		dp.SetDoubleValue(v) // 将浮点数直接作为指标值
 	case int:
-		dp.SetIntValue(int64(v))
+		dp.SetIntValue(int64(v)) // 将整数直接作为指标值
 	case string:
-		dp.Attributes().PutStr("value", v)
+		// 尝试将字符串解析为浮点数，如果成功则作为指标值，否则作为标签存储
+		if parsedValue, err := strconv.ParseFloat(v, 64); err == nil {
+			dp.SetDoubleValue(parsedValue)
+		} else {
+			dp.Attributes().PutStr("error_value", v) // 如果无法解析为数值，则作为标签存储
+		}
 	default:
-		dp.Attributes().PutStr("value", fmt.Sprintf("%v", v))
+		dp.Attributes().PutStr("error_value", fmt.Sprintf("%v", v)) // 其他类型仍作为标签存储
 	}
+
 }
