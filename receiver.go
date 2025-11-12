@@ -70,15 +70,17 @@ func (s *jsonScraper) Scrape(ctx context.Context) (pmetric.Metrics, error) {
 	}
 	//保留字段以后使用item["ip"].(string)
 	for _, item := range jsonData {
-		rtuFields := []string{"rtu1", "rtu2", "rtu3", "rtu4"}
-		for _, field := range rtuFields {
-			if value, ok := item[field]; ok {
-				appendDataPoint(dataMetricDataPoints, field, value)
+		if ipAddr, ok := item["ip"].(string); ok && ipAddr == s.target {
+			rtuFields := []string{"rtu1", "rtu2", "rtu3", "rtu4"}
+			for _, field := range rtuFields {
+				if value, ok := item[field]; ok {
+					appendDataPoint(dataMetricDataPoints, field, value)
+				}
 			}
-		}
 
-		if alarmValue, ok := item["alarm_value"]; ok {
-			appendDataPoint(alarmMetricDataPoints, "alarm.value", alarmValue)
+			if alarmValue, ok := item["alarm_value"]; ok {
+				appendDataPoint(alarmMetricDataPoints, "alarm.value", alarmValue)
+			}
 		}
 	}
 
